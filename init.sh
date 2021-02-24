@@ -10,7 +10,7 @@ generateCert () {
 }
 
 sudo apt-get update
-sudo apt-get install -y apt-transport-https curl
+sudo apt-get install -y software-properties-common apt-transport-https curl net-tools
 
 ## docker repo
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
