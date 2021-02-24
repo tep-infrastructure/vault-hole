@@ -46,26 +46,28 @@ sudo docker build -t nginx-proxy nginx-proxy/.
 sudo docker pull pihole/pihole:latest
 sudo docker pull vault:latest
 
-if [ "foo" = "foo1" ]; then
-   # for ubuntu, this service blocks port 53. grumble grumble.
-   sudo systemctl stop systemd-resolved
 
-   sudo docker rm pihole -f | true
-   sudo docker run --name pihole \
-      -d \
-      -p 53:53/tcp \
-      -p 53:53/udp \
-      -p 67:67/udp \
-      -p 8080:80/tcp \
-      -e TZ=Europe/London \
-      -v "$PWD/pihole/etc-pihole/:/etc/pihole/" \
-      -v "$PWD/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d" \
-      --restart unless-stopped \
-      --cap-add=NET_ADMIN \
-      --dns=127.0.0.1 \
-      --dns=8.8.8.8 \
-      pihole/pihole:latest
-fi
+# systemd-resolved needs to be convinced not to block port 53 - https://github.com/pi-hole/docker-pi-hole#installing-on-ubuntu
+sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
+
+sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
+sudo systemctl restart systemd-resolved
+
+sudo docker rm pihole -f | true
+sudo docker run --name pihole \
+   -d \
+   -p 53:53/tcp \
+   -p 53:53/udp \
+   -p 67:67/udp \
+   -p 8080:80/tcp \
+   -e TZ=Europe/London \
+   -v "$PWD/pihole/etc-pihole/:/etc/pihole/" \
+   -v "$PWD/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d" \
+   --restart unless-stopped \
+   --cap-add=NET_ADMIN \
+   --dns=127.0.0.1 \
+   --dns=8.8.8.8 \
+   pihole/pihole:latest
 
 sudo docker rm vault -f | true
 sudo docker run --name vault \
