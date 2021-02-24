@@ -51,13 +51,14 @@ sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/
 sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
 sudo systemctl restart systemd-resolved
 
+sudo docker network create vault-hole-network
+
 sudo docker rm pihole -f | true
 sudo docker run --name pihole \
    -d \
    -p 53:53/tcp \
    -p 53:53/udp \
    -p 67:67/udp \
-   -p 8080:80/tcp \
    -e TZ=Europe/London \
    -v "$PWD/pihole/etc-pihole/:/etc/pihole/" \
    -v "$PWD/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d" \
@@ -65,17 +66,18 @@ sudo docker run --name pihole \
    --cap-add=NET_ADMIN \
    --dns=127.0.0.1 \
    --dns=8.8.8.8 \
+   --network vault-hole-network \
    pihole/pihole:latest
 
 sudo docker rm vault -f | true
 sudo docker run --name vault \
    -d \
-   -p 8200:8200/tcp \
    -v $PWD/vault:/vault/config \
    -v $PWD/vault-file:/vault/file \
    --cap-add=IPC_LOCK \
    -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200' \
    --restart unless-stopped \
+   --network vault-hole-network \
    vault:latest server
 
 sudo docker rm nginx-proxy -f | true
@@ -84,4 +86,5 @@ sudo docker run --name nginx-proxy \
    -p 80:80/tcp \
    -p 443:443/tcp \
    --restart unless-stopped \
+   --network vault-hole-network \
    nginx-proxy
