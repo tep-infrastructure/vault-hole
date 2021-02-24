@@ -1,0 +1,10 @@
+FROM nginx
+
+RUN apt-get -y update && apt-get -y install iputils-ping curl
+RUN mkdir /certs
+COPY certs/vault.internal.crt /certs/.
+COPY certs/vault.internal.key /certs/.
+COPY certs/pihole.internal.crt /certs/.
+COPY certs/pihole.internal.key /certs/.
+
+COPY nginx.conf /etc/nginx/nginx.conf
