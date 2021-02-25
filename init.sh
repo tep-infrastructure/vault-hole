@@ -101,4 +101,6 @@ sudo docker run --name nginx-proxy \
    --network vault-hole-network \
    nginx-proxy
 
+sudo docker system prune --all --force
+
 echo "Completed init script."

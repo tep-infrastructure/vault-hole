@@ -40,5 +40,6 @@ else
    sudo docker logs nginx-proxy-test
 fi
 
+sudo docker system prune --all --force
 
 echo "Completed init script."
