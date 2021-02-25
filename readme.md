@@ -47,3 +47,16 @@ interface eth0
 ```
 
 Change IP address and router as necessary.
+
+### Change hostname
+
+```
+sudo hostnamectl set-hostname vault-hole
+echo "127.0.1.1" | sudo tee /etc/hosts -a
+```
+
+### Add user
+
+```bash
+sudo adduser -G sudo <new_user>
+```
