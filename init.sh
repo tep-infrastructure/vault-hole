@@ -2,11 +2,13 @@
 set -e
 
 generateCert () {
-  echo "Generating cert for $1"
+   if [ ! -f "$1.key" ]; then
+      echo "Generating cert for $1"
 
-   openssl genrsa -out $1.key 2048
-   openssl req -new -sha256 -key $1.key -subj "/C=UK/L=London/O=internal/CN=$1" -out $1.csr
-   openssl x509 -req -in $1.csr -CA internalCA.crt -CAkey internalCA.key -CAcreateserial -out $1.crt -days 3650 -sha256
+      openssl genrsa -out $1.key 2048
+      openssl req -new -sha256 -key $1.key -subj "/C=UK/L=London/O=internal/CN=$1" -out $1.csr
+      openssl x509 -req -in $1.csr -CA internalCA.crt -CAkey internalCA.key -CAcreateserial -out $1.crt -days 3650 -sha256
+   fi
 }
 
 sudo apt-get update
@@ -36,10 +38,11 @@ if [ ! -f internalCA.key ]; then
    # root cert, 'internal'
    openssl genrsa -des3 -out internalCA.key 4096 && \
    openssl req -x509 -new -nodes -key internalCA.key -sha256 -days 3650 -subj "/C=UK/L=London/O=internal/OU=internal/CN=internal" -out internalCA.crt
-
-   generateCert 'pihole.internal'
-   generateCert 'vault.internal'
 fi
+
+generateCert 'pihole.internal'
+generateCert 'vault.internal'
+generateCert 'internal'
 cd ../../
 
 echo "Building and pulling docker images."

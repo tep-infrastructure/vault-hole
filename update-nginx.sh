@@ -13,7 +13,6 @@ echo "Creating test container"
 sudo docker run --name nginx-proxy-test \
    -d \
    -p 1680:80/tcp \
-   --restart unless-stopped \
    --network vault-hole-network \
    nginx-proxy
 
