@@ -23,9 +23,6 @@ sudo add-apt-repository \
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 
-sudo apt-add-repository --remove "deb [arch=amd64] https://download.docker.com/linux/ubuntu" && \
-sudo apt-add-repository --remove "https://apt.releases.hashicorp.com"
-
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io git vim && \
 sudo apt-get install -y vault && \
