@@ -63,6 +63,7 @@ echo "Cleaning previous containers."
 sudo docker rm pihole -f > /dev/null | true
 sudo docker rm vault -f > /dev/null | true
 sudo docker rm nginx-proxy -f > /dev/null | true
+sudo docker rm nginx-proxy-test -f > /dev/null | true
 sudo docker network rm vault-hole-network > /dev/null | true
 sudo docker network create vault-hole-network
 
