@@ -16,9 +16,8 @@ sudo docker run --name nginx-proxy-test \
    --network vault-hole-network \
    nginx-proxy
 
-echo "curl"
+sleep 10
 response=$(curl -H "HOST: test.internal" --write-out '%{http_code}' --silent --output /dev/null localhost:1680) | true
-echo "Test response: $response"
 
 if [ "$response" == "204" ]; then
 
