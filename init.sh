@@ -71,6 +71,7 @@ echo "Creating containers."
 
 sudo docker run --name pihole \
    -d \
+   -p 8080:80/tcp \
    -p 53:53/tcp \
    -p 53:53/udp \
    -p 67:67/udp \
