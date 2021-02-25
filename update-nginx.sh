@@ -17,7 +17,7 @@ sudo docker run --name nginx-proxy-test \
    nginx-proxy
 
 sleep 10
-response=$(curl -H "HOST: test.internal" --write-out '%{http_code}' --silent --output /dev/null localhost:1680) | true
+response=$(curl -H "HOST: test.internal" --write-out '%{http_code}' --silent --output /dev/null localhost:1680)
 
 if [ "$response" == "204" ]; then
 
