@@ -37,7 +37,11 @@ vault kv put secret/foo password=value
 
 ### Static IP
 
-A PiHole works best with a static IP address. Append the following to `/etc/dhcpcd.conf`:
+A PiHole works best with a static IP address, but there seems to be several ways of doing that change from system to system.
+
+#### If `/etc/dhcpcd.conf` exists
+
+Append the following to `/etc/dhcpcd.conf`:
 
 ```bash
 interface eth0
@@ -47,6 +51,24 @@ interface eth0
 ```
 
 Change IP address and router as necessary.
+
+#### If `/etc/netplan` exists
+
+Change the yaml file within (the exact name of the file seems fluid) to match something like this:
+
+```yaml
+network:
+    ethernets:
+        eth0:
+            dhcp4: no
+            dhcp6: no
+            addresses: [192.168.1.10/24]
+            gateway4: 192.168.1.1
+            nameservers:
+                    addresses: [8.8.8.8,8.8.4.4]
+            optional: true
+    version: 2
+```
 
 ### Change hostname
 
