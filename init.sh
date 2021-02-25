@@ -48,9 +48,9 @@ sudo docker pull vault:latest
 
 # systemd-resolved needs to be convinced not to block port 53 - https://github.com/pi-hole/docker-pi-hole#installing-on-ubuntu
 sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
-
 sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
 sudo systemctl restart systemd-resolved
+
 
 sudo docker rm pihole -f | true
 sudo docker rm vault -f | true
