@@ -23,8 +23,12 @@ sudo add-apt-repository \
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 
+sudo apt-add-repository --remove "deb [arch=amd64] https://download.docker.com/linux/ubuntu" && \
+sudo apt-add-repository --remove "https://apt.releases.hashicorp.com"
+
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io vault git vim && \
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io git vim && \
+sudo apt-get install -y vault && \
 sudo systemctl enable docker && sudo systemctl start docker
 
 sudo usermod -aG docker $USER
@@ -41,23 +45,28 @@ if [ ! -f internalCA.key ]; then
 fi
 cd ../../
 
+echo "Building and pulling docker images."
+
 sudo docker build -t nginx-proxy nginx-proxy/.
 sudo docker pull pihole/pihole:latest
 sudo docker pull vault:latest
 
+echo "Configuring systemd resolve."
 
 # systemd-resolved needs to be convinced not to block port 53 - https://github.com/pi-hole/docker-pi-hole#installing-on-ubuntu
 sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
 sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
 sudo systemctl restart systemd-resolved
 
+echo "Cleaning previous containers."
 
-sudo docker rm pihole -f | true
-sudo docker rm vault -f | true
-sudo docker rm nginx-proxy -f | true
-
-sudo docker network rm vault-hole-network | true
+sudo docker rm pihole -f > /dev/null | true
+sudo docker rm vault -f > /dev/null | true
+sudo docker rm nginx-proxy -f > /dev/null | true
+sudo docker network rm vault-hole-network > /dev/null | true
 sudo docker network create vault-hole-network
+
+echo "Creating containers."
 
 sudo docker run --name pihole \
    -d \
@@ -91,3 +100,5 @@ sudo docker run --name nginx-proxy \
    --restart unless-stopped \
    --network vault-hole-network \
    nginx-proxy
+
+echo "Completed init script."
