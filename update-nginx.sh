@@ -17,11 +17,15 @@ sudo docker run --name nginx-proxy-test \
    --network vault-hole-network \
    nginx-proxy
 
-response=$(curl -H "HOST: test.internal" --write-out '%{http_code}' --silent --output /dev/null localhost:1680)
+echo "curl"
+response=$(curl -H "HOST: test.internal" --write-out '%{http_code}' --silent --output /dev/null localhost:1680) | true
+echo "Test response: $response"
+
 if [ "$response" == "204" ]; then
 
    echo "Test successful, creating proxy."
    sudo docker rm nginx-proxy -f > /dev/null | true
+   sudo docker rm nginx-proxy-test -f > /dev/null | true
    sudo docker run --name nginx-proxy \
       -d \
       -p 80:80/tcp \
@@ -31,9 +35,11 @@ if [ "$response" == "204" ]; then
       nginx-proxy
 
 else
-   echo "Test failed, non successful response from test.internal."
+   echo "Test failed, non successful response from test.internal, status code: '$response'."
+   echo "Docker logs from 'sudo docker logs nginx-proxy-test'."
+
+   sudo docker logs nginx-proxy-test
 fi
 
-sudo docker rm nginx-proxy-test -f > /dev/null | true
 
 echo "Completed init script."
