@@ -25,3 +25,6 @@ docker run --name pihole \
    --network vault-hole-network \
    $IMAGE_NAME
 
+echo "Update completed. It may take a few minutes for Pihole to restart."
+echo "The old pihole is now called pihole_backup and can be restored manually."
+

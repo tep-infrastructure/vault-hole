@@ -41,4 +41,4 @@ fi
 
 sudo docker system prune --all --force
 
-echo "Completed init script."
+echo "Completed update script."
