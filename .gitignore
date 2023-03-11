@@ -1,3 +1,4 @@
+*.zip
 pihole/
 nginx-proxy/certs/
 vault-file/
