@@ -12,21 +12,36 @@ generateCert () {
 }
 
 sudo apt-get update
-sudo apt-get install -y software-properties-common apt-transport-https curl net-tools
+sudo apt-get install -y apt-transport-https curl net-tools ca-certificates gpg
 
 ## docker repo
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-   "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+
+sudo curl -fsSL https://get.docker.com | sh
+
+# Add Docker's official GPG key:
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/raspbian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/raspbian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 
 ## hashicorp repo
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo rm -rf /usr/share/keyrings/hashicorp-archive-keyring.gpg
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com \
+  $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | \
+  sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
+
 
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io git vim && \
+
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin git vim && \
 sudo apt-get install -y vault && \
 sudo systemctl enable docker && sudo systemctl start docker
 
@@ -49,14 +64,7 @@ echo "Building and pulling docker images."
 
 sudo docker build -t nginx-proxy nginx-proxy/.
 sudo docker pull pihole/pihole:latest
-sudo docker pull vault:latest
-
-echo "Configuring systemd resolve."
-
-# systemd-resolved needs to be convinced not to block port 53 - https://github.com/pi-hole/docker-pi-hole#installing-on-ubuntu
-sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
-sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
-sudo systemctl restart systemd-resolved
+sudo docker pull hashicorp/vault:latest
 
 echo "Cleaning previous containers."
 
@@ -93,7 +101,7 @@ sudo docker run --name vault \
    -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200' \
    --restart unless-stopped \
    --network vault-hole-network \
-   vault:latest server
+   hashicorp/vault:latest server
 
 sudo docker run --name nginx-proxy \
    -d \
